@@ -37,10 +37,6 @@ export class Editor {
         this[this.mode + "Mode"].call(this);
     }
 
-    selectStart() {
-        const layer = this.layers.find((layer) => layer.isSelected);
-    }
-
     selectMode() {
         this.canvas.style.zIndex = 1;
     }
@@ -63,7 +59,7 @@ export class Editor {
         this.canvas.style.zIndex = 9999;
     }
 
-    cropMove(event) {
+    cropMove() {
         if (this.dragState) {
             this.drawLocation();
         }

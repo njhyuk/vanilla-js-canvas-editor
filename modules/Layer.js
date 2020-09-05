@@ -42,9 +42,7 @@ export class Layer {
     }
 
     attachEvents() {
-        this.canvas.addEventListener("mousedown", (event) => {
-            this.setSelected(true)
-        })
+        this.canvas.addEventListener("mousedown", () => this.setSelected(true))
     }
 
     clearRect(startX, startY, width, height) {
