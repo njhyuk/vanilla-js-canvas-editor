@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanilla JS Canvas Editor</title>
+    <script type="module" src="app.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        #control {
+            margin-bottom: 10px;
+        }
+
+        #editor {
+            width: 500px;
+            height: 500px;
+            overflow: hidden;
+            border: 1px solid #000000;
+            position: relative;
+        }
+
+        #workspace {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body>
+<div id="control">
+    <button id="add-image">Add Image</button>
+    <button id="select">Select</button>
+    <button id="crop">Crop</button>
+</div>
+<div id="editor">
+    <canvas id="workspace" width="500" height="500"></canvas>
+</div>
+</body>
+</html>
