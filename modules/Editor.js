@@ -66,7 +66,7 @@ export class Editor {
         const width = this.location.end.x - this.location.start.x;
         const height = this.location.end.y - this.location.start.y;
 
-        layer.clearRect(startX, startY, width, width);
+        layer.clearRect(startX, startY, width, height);
 
         canvas.style.left = this.location.start.x + "px";
         canvas.style.top = this.location.start.y + "px";
