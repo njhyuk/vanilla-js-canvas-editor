@@ -2,11 +2,6 @@ export class Layer {
     editor;
     canvas;
     isSelected;
-    dragState;
-    location = {
-        start: {},
-        end: {},
-    };
 
     constructor(editor) {
         this.editor = editor;
@@ -31,8 +26,9 @@ export class Layer {
 
         this.isSelected = state;
 
-        let color = state ? "rgba(240, 52, 52, 1)" : "rgba(240, 52, 52, 0)";
+        let color = state ? "rgba(240, 52, 52, 1)" : "rgba(0, 0, 0, 0)";
         this.canvas.style.boxShadow = " 0px 0px 0px 2px " + color;
+        this.canvas.style.zIndex = (++this.editor.zIndexTop).toString();
     }
 
     async addImage(image) {
@@ -47,30 +43,8 @@ export class Layer {
 
     attachEvents() {
         this.canvas.addEventListener("mousedown", (event) => {
-            this.dragState = true;
-            this.location.start = {
-                x: event.offsetX,
-                y: event.offsetY,
-            }
-
             this.setSelected(true)
         })
-
-        this.canvas.addEventListener("mousemove", (event) => {
-            if (this.dragState) {
-                this.location.end = {
-                    x: event.offsetX,
-                    y: event.offsetY,
-                }
-
-                this.canvas.style.left = parseInt(this.canvas.style.left) + (this.location.end.x - this.location.start.x) + "px";
-                this.canvas.style.top = parseInt(this.canvas.style.top) + (this.location.end.y - this.location.start.y) + "px";
-            }
-        })
-
-        this.canvas.addEventListener("mouseup", (event) => {
-            this.dragState = false;
-        });
     }
 
     clearRect(startX, startY, width, height) {

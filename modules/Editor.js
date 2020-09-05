@@ -9,12 +9,17 @@ async function importImage(src) {
 }
 
 export class Editor {
-    mode = ""
+    mode = "";
+    zIndexTop = 1;
     layers = [];
     container;
     canvas;
     dragState = false;
-    location = {
+    pageLocation = {
+        start: {},
+        end: {},
+    };
+    offsetLocation = {
         start: {},
         end: {},
     };
@@ -32,19 +37,33 @@ export class Editor {
         this[this.mode + "Mode"].call(this);
     }
 
+    selectStart() {
+        const layer = this.layers.find((layer) => layer.isSelected);
+    }
+
     selectMode() {
-        this.canvas.style.zIndex = -1;
+        this.canvas.style.zIndex = 1;
+    }
+
+    selectMove(event) {
+        if (this.dragState) {
+            const layer = this.layers.find((layer) => layer.isSelected);
+
+            layer.canvas.style.left = parseInt(layer.canvas.style.left) + event.pageX - this.pageLocation.start.x + "px";
+            layer.canvas.style.top = parseInt(layer.canvas.style.top) + event.pageY - this.pageLocation.start.y + "px";
+
+            this.pageLocation.start = {
+                x: event.pageX,
+                y: event.pageY,
+            }
+        }
     }
 
     cropMode() {
-        this.canvas.style.zIndex = 1000;
+        this.canvas.style.zIndex = 9999;
     }
 
-    cropStart() {
-        this.dragState = true;
-    }
-
-    cropMove() {
+    cropMove(event) {
         if (this.dragState) {
             this.drawLocation();
         }
@@ -61,21 +80,19 @@ export class Editor {
         const canvas = croppedLayer.canvas;
         const context = canvas.getContext("2d");
 
-        const startX = this.location.start.x - parseInt(layer.canvas.style.left);
-        const startY = this.location.start.y - parseInt(layer.canvas.style.top);
-        const width = this.location.end.x - this.location.start.x;
-        const height = this.location.end.y - this.location.start.y;
+        const startX = this.offsetLocation.start.x - parseInt(layer.canvas.style.left);
+        const startY = this.offsetLocation.start.y - parseInt(layer.canvas.style.top);
+        const width = this.offsetLocation.end.x - this.offsetLocation.start.x;
+        const height = this.offsetLocation.end.y - this.offsetLocation.start.y;
 
         layer.clearRect(startX, startY, width, height);
 
-        canvas.style.left = this.location.start.x + "px";
-        canvas.style.top = this.location.start.y + "px";
+        canvas.style.left = this.offsetLocation.start.x + "px";
+        canvas.style.top = this.offsetLocation.start.y + "px";
         canvas.width = width;
         canvas.height = height;
 
         context.drawImage(image, startX, startY, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-
-        croppedLayer.canvas.style.zIndex = parseInt(layer.canvas.style.zIndex) + 1;
 
         this.appendLayer(croppedLayer);
 
@@ -92,17 +109,27 @@ export class Editor {
     }
 
     attachEvents() {
-        this.canvas.addEventListener("mousedown", (event) => {
-            this.location.start = {
+        this.container.addEventListener("mousedown", (event) => {
+            this.pageLocation.start = {
+                x: event.pageX,
+                y: event.pageY,
+            }
+            this.offsetLocation.start = {
                 x: event.offsetX,
                 y: event.offsetY,
             }
 
+            this.dragState = true;
+
             this.executeEvent(event, "Start")
         })
 
-        this.canvas.addEventListener("mousemove", (event) => {
-            this.location.end = {
+        this.container.addEventListener("mousemove", (event) => {
+            this.pageLocation.end = {
+                x: event.offsetX,
+                y: event.offsetY,
+            }
+            this.offsetLocation.end = {
                 x: event.offsetX,
                 y: event.offsetY,
             }
@@ -110,12 +137,20 @@ export class Editor {
             this.executeEvent(event, "Move")
         })
 
-        this.canvas.addEventListener("mouseup", (event) => {
+        this.container.addEventListener("mouseup", (event) => {
+            this.dragState = false;
+
             this.executeEvent(event, "End");
         });
     }
 
     appendLayer(layer) {
+        const lastLayer = this.layers[this.layers.length - 1];
+
+        if (lastLayer) {
+            layer.canvas.style.zIndex = this.zIndexTop.toString();
+        }
+
         this.layers.push(layer);
         this.container.append(layer.canvas);
     }
@@ -136,8 +171,8 @@ export class Editor {
         const path = new Path2D();
 
         this.clear()
-        path.moveTo(this.location.start.x, this.location.start.y);
-        path.lineTo(this.location.end.x, this.location.end.y);
+        path.moveTo(this.offsetLocation.start.x, this.offsetLocation.start.y);
+        path.lineTo(this.offsetLocation.end.x, this.offsetLocation.end.y);
 
         context.stroke(path);
     }
